@@ -28,10 +28,6 @@ A lightweight Chrome extension that automatically saves your VOD watch progress 
 
 4. You can also access a history view from the extension popup for quick navigation.
 
-🧹 Auto-Cleanup
-
-Old entries are automatically deleted after 30 days to keep your storage clean.
-
 📥 Installation
 > [!NOTE]  
   Due to the Chrome Extension Store being pay to publish I prefer to do local releases instead.  
