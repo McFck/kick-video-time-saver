@@ -30,7 +30,7 @@ A lightweight Chrome extension that automatically saves your VOD watch progress 
 
 📥 Installation
 > [!NOTE]  
-  Due to the Chrome Extension Store being pay to publish I prefer to do local releases instead.  
+  Due to the Chrome Extension Store being pay to publish I prefer to do local releases instead. Updates are manual as well...
 1. **Download** .crx file from the releases.
 2. **Open** `chrome://extensions`.
 3. **Drag 'n Drop** downloaded file inside `chrome://extensions` page
