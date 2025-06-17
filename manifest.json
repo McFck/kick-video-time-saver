@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "Kick Video Time Saver",
+  "version": "1.0",
+  "author": "McFck",
+  "description": "Automatically saves and restores video timestamps on Kick.com",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://kick.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://kick.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Kick Video Time Saver"
+  }
+}
