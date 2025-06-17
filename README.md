@@ -1,5 +1,8 @@
+> [!IMPORTANT]
+> Support is limited, this is just a quick barebones implementation of the idea I've had for a long time
+
 # Kick VOD Progress Saver
-A lightweight Chrome extension that automatically saves your VOD watch progress on Kick.com. Perfect for those who like to jump back into streams where they left off — without the hassle.
+A lightweight Chrome extension that automatically saves your VOD watch progress on **Kick.com**. Perfect for those who like to jump back into streams where they left off — without the hassle.
 
 ![image](https://github.com/user-attachments/assets/e17893cc-2edc-49bf-a5ef-0163a582d5a6)
 
@@ -30,11 +33,12 @@ A lightweight Chrome extension that automatically saves your VOD watch progress 
 Old entries are automatically deleted after 30 days to keep your storage clean.
 
 📥 Installation
-
-1. Download .crx file from the releases.
-2. Open chrome://extensions.
-3. Drag 'n Drop downloaded file inside chrome://extensions page
-4. Done!
+> [!NOTE]  
+  Due to the Chrome Extension Store being pay to publish I prefer to do local releases instead.  
+1. **Download** .crx file from the releases.
+2. **Open** `chrome://extensions`.
+3. **Drag 'n Drop** downloaded file inside `chrome://extensions` page
+4. **Done!**
 
 ![image](https://github.com/user-attachments/assets/546a429d-c21b-4b67-922d-d07fc39ded43)
 
