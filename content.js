@@ -170,7 +170,6 @@ class KickVideoTimeSaver {
     this.isInitialized = false;
     this.isLoaded = false;
     this.lastSavedTime = 0;
-    this.streamInfo = null;
   }
 
   observeUrlChanges() {
