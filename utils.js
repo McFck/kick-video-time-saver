@@ -73,5 +73,10 @@ window.KickTimeSaver.utils = {
         } else {
             return date.toLocaleDateString();
         }
+    },
+
+    getWatchedPercentage: function(currentTime, duration) {
+        const percentage = (currentTime / duration) * 100;
+        return +((percentage).toFixed(2));
     }
 };

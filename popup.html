@@ -51,7 +51,19 @@
             pointer-events: none;
         }
 
+        .video-progress-fill {
+            position: absolute;
+            height: 100%;
+            display: block;
+            left: 0;
+            background-color: #4bc51f53;
+            border-radius: 6px 0 0 6px;
+            transition: width 0.3s ease;
+            pointer-events: none;
+        }
+
         .video-item {
+            position: relative;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -70,6 +82,10 @@
             font-weight: 500;
             color: #1f2937;
             margin-bottom: 2px;
+        }
+
+        .video-time, .video-actions {
+            z-index: 1;
         }
 
         .video-time {

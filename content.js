@@ -120,18 +120,21 @@ class KickVideoTimeSaver {
     if (!this.video || !this.streamId || !this.isLoaded) return;
 
     const currentTime = this.video.currentTime;
+    const duration = this.video.duration;
+    console.log(duration)
 
     try {
       const key = `kick_video_time_${this.streamId}`;
       const data = {
         timestamp: currentTime,
+        duration, 
         savedAt: Date.now(),
         streamId: this.streamId,
         streamName: this.streamName,
         url: window.location.href
       };
 
-      console.log('saved time', currentTime)
+      console.log('saved time', currentTime);
       await chrome.storage.local.set({ [key]: data });
       this.lastSavedTime = currentTime;
     } catch (error) {

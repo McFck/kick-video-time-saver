@@ -12,7 +12,6 @@ function showConfirmDialog() {
     const overlay = document.getElementById('confirmOverlay');
     const elementsToBlur = ['savedVideos', 'status', 'clearAll'];
 
-    // Apply blur effect
     elementsToBlur.forEach(id => {
         const element = document.getElementById(id);
         if (element) {
@@ -20,7 +19,6 @@ function showConfirmDialog() {
         }
     });
 
-    // Show overlay
     overlay.classList.add('show');
 }
 
@@ -28,7 +26,6 @@ function hideConfirmDialog() {
     const overlay = document.getElementById('confirmOverlay');
     const elementsToBlur = ['savedVideos', 'status', 'clearAll'];
 
-    // Remove blur effect
     elementsToBlur.forEach(id => {
         const element = document.getElementById(id);
         if (element) {
@@ -36,7 +33,6 @@ function hideConfirmDialog() {
         }
     });
 
-    // Hide overlay
     overlay.classList.remove('show');
 }
 
@@ -61,6 +57,7 @@ async function loadSavedVideos() {
                         key: key,
                         streamId: value.streamId,
                         streamName: value.streamName || 'No title',
+                        duration: value.duration,
                         timestamp: value.timestamp,
                         savedAt: value.savedAt,
                         url: value.url
@@ -85,13 +82,13 @@ function displaySavedVideos(videos) {
     const clearAllBtn = document.getElementById('clearAll');
 
     if (videos.length === 0) {
-        clearAllBtn.disabled  = true;
+        clearAllBtn.disabled = true;
         container.innerHTML = '<div class="no-data-wrap"><div class="no-data">No saved timestamps yet</div></div>';
         return;
     }
-    
+
     videos.sort((a, b) => b.savedAt - a.savedAt);
-    
+
     container.innerHTML = videos.map(video => {
         let displayName = video.streamName;
         if (!displayName || displayName === 'No title') {
@@ -109,13 +106,17 @@ function displaySavedVideos(videos) {
         }
 
         const videoUrl = video.url;
+        const watchedPercentage = video.duration
+            ? utils.getWatchedPercentage(video.timestamp, video.duration)
+            : 0;
 
         return `
                 <div class="video-item">
+                    <div class="video-progress-fill" style="width: ${watchedPercentage}%;"></div>
                     <div class="video-info">
                         <div class="video-name" title="${escapeHtml(video.streamName || video.streamId)}">${escapeHtml(displayName)}</div>
                         <div class="video-time">
-                            ${utils.formatTime(video.timestamp)} • ${utils.formatDate(video.savedAt)}
+                            ${utils.formatTime(video.timestamp)} / ${utils.formatTime(video.duration)} • ${utils.formatDate(video.savedAt)}
                         </div>
                     </div>
                     <div class="video-actions">
