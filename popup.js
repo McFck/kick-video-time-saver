@@ -49,7 +49,7 @@ async function loadSavedVideos() {
         const oneMonthAgo = Date.now() - (30 * 24 * 60 * 60 * 1000); // 30 days in milliseconds
 
         for (const [key, value] of Object.entries(result)) {
-            if (key.startsWith('kick_video_time_') && value.timestamp) {
+            if (value.timestamp) {
                 if (value.savedAt && value.savedAt < oneMonthAgo) {
                     keysToRemove.push(key);
                 } else {

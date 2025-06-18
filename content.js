@@ -12,7 +12,7 @@ class KickVideoTimeSaver {
     this.init();
   }
 
-  async init() {
+  async init() {    
     this.waitForVideo();
 
     this.observeUrlChanges();
@@ -89,7 +89,7 @@ class KickVideoTimeSaver {
 
     const videoMatch = url.match(/kick\.com\/[^\/]+\/videos\/([^\/\?]+)/);
     if (videoMatch) {
-      return `video_${videoMatch[1]}`;
+      return videoMatch[1];
     }
 
     return 'unknown';
@@ -97,7 +97,7 @@ class KickVideoTimeSaver {
 
   async loadSavedTime() {
     try {
-      const key = `kick_video_time_${this.streamId}`;
+      const key = this.streamId;
       const result = await chrome.storage.local.get([key]);
       const savedData = result[key];
 
@@ -107,13 +107,14 @@ class KickVideoTimeSaver {
           if (this.video && this.video.duration > savedData.timestamp) {
             this.video.currentTime = savedData.timestamp;
             console.log(`Kick Video Time Saver: Restored time to ${savedData.timestamp}s`);
+            this.isLoaded = true;
           }
         }, 1000);
       }
     } catch (error) {
       console.error('Error loading saved time:', error);
+      this.isLoaded = true;
     }
-    this.isLoaded = true;
   }
 
   async saveCurrentTime() {
@@ -124,10 +125,10 @@ class KickVideoTimeSaver {
     console.log(duration)
 
     try {
-      const key = `kick_video_time_${this.streamId}`;
+      const key = this.streamId
       const data = {
         timestamp: currentTime,
-        duration, 
+        duration,
         savedAt: Date.now(),
         streamId: this.streamId,
         streamName: this.streamName,
