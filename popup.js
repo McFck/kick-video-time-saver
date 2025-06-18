@@ -1,3 +1,5 @@
+const utils = window.KickTimeSaver.utils;
+
 document.addEventListener('DOMContentLoaded', async function() {
     await loadSavedVideos();
     
@@ -30,12 +32,10 @@ async function loadSavedVideos() {
         
         if (keysToRemove.length > 0) {
             await chrome.storage.local.remove(keysToRemove);
-            console.log(`Removed ${keysToRemove.length} expired video timestamps (older than 30 days)`);
         }
         
         displaySavedVideos(savedVideos);
     } catch (error) {
-        console.error('Error loading saved videos:', error);
         document.getElementById('savedVideos').innerHTML = 
             '<div class="no-data">Error loading saved times</div>';
     }
@@ -74,7 +74,7 @@ function displaySavedVideos(videos) {
             <div class="video-info">
                 <div class="video-name" title="${escapeHtml(video.streamName || video.streamId)}">${escapeHtml(displayName)}</div>
                 <div class="video-time">
-                    ${formatTime(video.timestamp)} • ${formatDate(video.savedAt)}
+                    ${utils.formatTime(video.timestamp)} • ${utils.formatDate(video.savedAt)}
                 </div>
             </div>
             <div class="video-actions">
@@ -143,6 +143,7 @@ async function deleteSavedTime(key) {
 }
 
 async function clearAllSavedTimes() {
+    //todo: change confirm
     if (!confirm('Are you sure you want to clear all saved timestamps?')) {
         return;
     }
@@ -160,35 +161,6 @@ async function clearAllSavedTimes() {
         await loadSavedVideos();
     } catch (error) {
         console.error('Error clearing saved times:', error);
-    }
-}
-
-function formatTime(seconds) {
-    const hrs = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    const secs = Math.floor(seconds % 60);
-    
-    if (hrs > 0) {
-        return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    }
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-}
-
-function formatDate(timestamp) {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffMs = now - date;
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffHours / 24);
-    
-    if (diffHours < 1) {
-        return 'Just now';
-    } else if (diffHours < 24) {
-        return `${diffHours}h ago`;
-    } else if (diffDays < 7) {
-        return `${diffDays}d ago`;
-    } else {
-        return date.toLocaleDateString();
     }
 }
 

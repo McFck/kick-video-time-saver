@@ -1,47 +1,4 @@
-function extractStreamVideoData() {
-  const scripts = document.querySelectorAll('script');
-
-  for (const script of scripts) {
-    const scriptContent = script.textContent || script.innerHTML;
-    if (!scriptContent) continue;
-
-    if (scriptContent.includes('channelSlug') && scriptContent.includes('dehydratedAt')) {
-      const match = scriptContent.match(/self\.__next_f\.push\(\[1,"(\d+):(.*)"\]\);?/s);
-      const escapedJsonString = match[2];
-      const onceParsed = JSON.parse(`"${escapedJsonString}"`);
-      const result = JSON.parse(onceParsed);
-
-      const queries = result[3].state.queries;
-
-      const liveStreamQuery = queries.find(query=>query.queryKey.join(' ').includes('Channel info'));
-      const livestream = liveStreamQuery?.state?.data?.livestream ? { ...liveStreamQuery.state.data.livestream } : null;
-
-      const vodQuery = queries.find(query=>query.queryKey.join(' ').includes('Channel video'));
-      const vod = vodQuery?.state?.data?.livestream ? { ...vodQuery.state.data.livestream, uuid: vodQuery.state.data.uuid } : null;
-
-      return {
-        livestream,
-        vod
-      };
-    }
-  }
-  return null;
-}
-
-function extractTimecode() {
-  try {
-    const parsedUrl = new URL(window.location.href);
-
-    if (!parsedUrl.hostname.endsWith('kick.com')) {
-      return null;
-    }
-
-    const tValue = parsedUrl.searchParams.get('t');
-    return tValue;
-  } catch (error) {
-    return null;
-  }
-}
+const utils = window.KickTimeSaver.utils;
 
 class KickVideoTimeSaver {
   constructor() {
@@ -49,10 +6,9 @@ class KickVideoTimeSaver {
     this.streamId = null;
     this.saveInterval = null;
     this.isInitialized = false;
+    this.isLoaded = false;
     this.lastSavedTime = 0;
     this.saveFrequency = 5000;
-    this.streamInfo = null;
-    this.engagedWatching = false;
     this.init();
   }
 
@@ -91,54 +47,17 @@ class KickVideoTimeSaver {
   }
 
   async setupVideoHandlers(video) {
-    // this.streamInfo = extractStreamVideoData();
     this.video = video;
     this.streamId = this.getStreamId();
     this.isInitialized = true;
 
     console.log('Kick Video Time Saver: Video detected', this.streamId);
 
-    this.engagedWatching = !!Object.values(await chrome.storage.local.get([`kick_video_time_${this.streamId}`]))?.length;
 
     video.addEventListener('loadedmetadata', () => {
       this.updateName();
       this.loadSavedTime();
-
-      if (!this.engagedWatching) {
-        let lastWatchTime = 0;
-        let watchedSeconds = 0;
-        const minWatchTime = Math.min(video.duration * 0.01, 15);
-        const onSeeked = () => {
-          lastWatchTime = video.currentTime;
-        };
-
-        const onTimeUpdate = () => {
-          if (this.engagedWatching) {
-            video.removeEventListener('seeked', onSeeked);
-            video.removeEventListener('timeupdate', onTimeUpdate);
-            return;
-          }
-
-          if (!video.paused && !video.seeking) {
-            const now = video.currentTime;
-            const delta = now - lastWatchTime;
-
-            if (delta > 0) {
-              watchedSeconds += delta;
-
-              if (watchedSeconds >= minWatchTime) {
-                this.engagedWatching = true;
-                video.removeEventListener('seeked', onSeeked);
-                video.removeEventListener('timeupdate', onTimeUpdate);
-              }
-            }
-            lastWatchTime = now;
-          }
-        };
-
-        video.addEventListener('seeked', onSeeked);
-        video.addEventListener('timeupdate', onTimeUpdate);
-      }
+      this.isLoaded = true;
     });
 
 
@@ -148,8 +67,6 @@ class KickVideoTimeSaver {
     video.addEventListener('seeked', () => this.saveCurrentTime());
 
     window.addEventListener('beforeunload', () => this.saveCurrentTime());
-
-    // this.startNameUpdateInterval();
   }
 
   getStreamName() {
@@ -177,8 +94,7 @@ class KickVideoTimeSaver {
       return `video_${videoMatch[1]}`;
     }
 
-    const streamMatch = url.match(/kick\.com\/([^\/\?]+)/);
-    return streamMatch ? `stream_${streamMatch[1]}` : 'unknown';
+    return 'unknown';
   }
 
   async loadSavedTime() {
@@ -187,14 +103,12 @@ class KickVideoTimeSaver {
       const result = await chrome.storage.local.get([key]);
       const savedData = result[key];
 
-      if (savedData && savedData.timestamp && this.video && !extractTimecode()) {
+      if (savedData && savedData.timestamp && this.video && !utils.extractTimecode()) {
         // Wait a bit for video to be fully loaded
         setTimeout(() => {
           if (this.video && this.video.duration > savedData.timestamp) {
             this.video.currentTime = savedData.timestamp;
             console.log(`Kick Video Time Saver: Restored time to ${savedData.timestamp}s`);
-
-            this.showNotification(`Resumed from ${this.formatTime(savedData.timestamp)}`);
           }
         }, 1000);
       }
@@ -204,7 +118,7 @@ class KickVideoTimeSaver {
   }
 
   async saveCurrentTime() {
-    if (!this.video || !this.streamId || !this.engagedWatching) return;
+    if (!this.video || !this.streamId || !this.isLoaded) return;
 
     const currentTime = this.video.currentTime;
 
@@ -215,7 +129,6 @@ class KickVideoTimeSaver {
         savedAt: Date.now(),
         streamId: this.streamId,
         streamName: this.streamName,
-        // uuid: this.streamInfo.vod?.uuid ?? this.streamInfo?.livestream?.id ?? null,
         url: window.location.href
       };
 
@@ -230,14 +143,6 @@ class KickVideoTimeSaver {
     const newName = this.getStreamName();
     if (newName !== this.streamName) {
       this.streamName = newName;
-    }
-  }
-
-  startNameUpdateInterval() {
-    if (this.streamId.startsWith('stream_')) {
-      setInterval(() => {
-        this.updateName();
-      }, 30000);
     }
   }
 
@@ -263,9 +168,9 @@ class KickVideoTimeSaver {
     this.streamId = null;
     this.streamName = 'No title';
     this.isInitialized = false;
+    this.isLoaded = false;
     this.lastSavedTime = 0;
     this.streamInfo = null;
-    this.engagedWatching = false;
   }
 
   observeUrlChanges() {
@@ -284,46 +189,6 @@ class KickVideoTimeSaver {
       childList: true,
       subtree: true
     });
-  }
-
-  showNotification(message) {
-    const notification = document.createElement('div');
-    notification.textContent = `⏰ ${message}`;
-    notification.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: #1f2937;
-      color: white;
-      padding: 12px 16px;
-      border-radius: 8px;
-      font-size: 14px;
-      z-index: 10000;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      transition: opacity 0.3s ease;
-    `;
-
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-      notification.style.opacity = '0';
-      setTimeout(() => {
-        if (notification.parentNode) {
-          notification.parentNode.removeChild(notification);
-        }
-      }, 300);
-    }, 3000);
-  }
-
-  formatTime(seconds) {
-    const hrs = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    const secs = Math.floor(seconds % 60);
-
-    if (hrs > 0) {
-      return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    }
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   }
 }
 
