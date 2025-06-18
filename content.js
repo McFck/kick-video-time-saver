@@ -106,15 +106,14 @@ class KickVideoTimeSaver {
         setTimeout(() => {
           if (this.video && this.video.duration > savedData.timestamp) {
             this.video.currentTime = savedData.timestamp;
-            this.isLoaded = true;
             console.log(`Kick Video Time Saver: Restored time to ${savedData.timestamp}s`);
           }
         }, 1000);
       }
     } catch (error) {
-      this.isLoaded = true;
       console.error('Error loading saved time:', error);
     }
+    this.isLoaded = true;
   }
 
   async saveCurrentTime() {

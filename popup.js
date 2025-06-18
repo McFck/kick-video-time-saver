@@ -1,10 +1,49 @@
 const utils = window.KickTimeSaver.utils;
 
-document.addEventListener('DOMContentLoaded', async function() {
+document.addEventListener('DOMContentLoaded', async function () {
     await loadSavedVideos();
-    
-    document.getElementById('clearAll').addEventListener('click', clearAllSavedTimes);
+
+    document.getElementById('clearAll').addEventListener('click', showConfirmDialog);
+    document.getElementById('confirmCancel').addEventListener('click', hideConfirmDialog);
+    document.getElementById('confirmOk').addEventListener('click', confirmClearAll);
 });
+
+function showConfirmDialog() {
+    const overlay = document.getElementById('confirmOverlay');
+    const elementsToBlur = ['savedVideos', 'status', 'clearAll'];
+
+    // Apply blur effect
+    elementsToBlur.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.classList.add('blurred');
+        }
+    });
+
+    // Show overlay
+    overlay.classList.add('show');
+}
+
+function hideConfirmDialog() {
+    const overlay = document.getElementById('confirmOverlay');
+    const elementsToBlur = ['savedVideos', 'status', 'clearAll'];
+
+    // Remove blur effect
+    elementsToBlur.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.classList.remove('blurred');
+        }
+    });
+
+    // Hide overlay
+    overlay.classList.remove('show');
+}
+
+async function confirmClearAll() {
+    hideConfirmDialog();
+    await clearAllSavedTimes();
+}
 
 async function loadSavedVideos() {
     try {
@@ -12,7 +51,7 @@ async function loadSavedVideos() {
         const savedVideos = [];
         const keysToRemove = [];
         const oneMonthAgo = Date.now() - (30 * 24 * 60 * 60 * 1000); // 30 days in milliseconds
-        
+
         for (const [key, value] of Object.entries(result)) {
             if (key.startsWith('kick_video_time_') && value.timestamp) {
                 if (value.savedAt && value.savedAt < oneMonthAgo) {
@@ -29,23 +68,25 @@ async function loadSavedVideos() {
                 }
             }
         }
-        
+
         if (keysToRemove.length > 0) {
             await chrome.storage.local.remove(keysToRemove);
         }
-        
+
         displaySavedVideos(savedVideos);
     } catch (error) {
-        document.getElementById('savedVideos').innerHTML = 
+        document.getElementById('savedVideos').innerHTML =
             '<div class="no-data">Error loading saved times</div>';
     }
 }
 
 function displaySavedVideos(videos) {
     const container = document.getElementById('savedVideos');
-    
+    const clearAllBtn = document.getElementById('clearAll');
+
     if (videos.length === 0) {
-        container.innerHTML = '<div class="no-data">No saved timestamps yet</div>';
+        clearAllBtn.disabled  = true;
+        container.innerHTML = '<div class="no-data-wrap"><div class="no-data">No saved timestamps yet</div></div>';
         return;
     }
     
@@ -62,42 +103,43 @@ function displaySavedVideos(videos) {
                 displayName = video.streamId;
             }
         }
-        
+
         if (displayName.length > 40) {
             displayName = displayName.substring(0, 37) + '...';
         }
-        
-        const videoUrl = video.url; //createTimestampUrl(video.url, video.timestamp);
-        
+
+        const videoUrl = video.url;
+
         return `
-        <div class="video-item">
-            <div class="video-info">
-                <div class="video-name" title="${escapeHtml(video.streamName || video.streamId)}">${escapeHtml(displayName)}</div>
-                <div class="video-time">
-                    ${utils.formatTime(video.timestamp)} • ${utils.formatDate(video.savedAt)}
+                <div class="video-item">
+                    <div class="video-info">
+                        <div class="video-name" title="${escapeHtml(video.streamName || video.streamId)}">${escapeHtml(displayName)}</div>
+                        <div class="video-time">
+                            ${utils.formatTime(video.timestamp)} • ${utils.formatDate(video.savedAt)}
+                        </div>
+                    </div>
+                    <div class="video-actions">
+                        <button class="go-btn" data-url="${escapeHtml(videoUrl)}">Go</button>
+                        <button class="delete-btn" data-key="${video.key}">×</button>
+                    </div>
                 </div>
-            </div>
-            <div class="video-actions">
-                <button class="go-btn" data-url="${escapeHtml(videoUrl)}">Go</button>
-                <button class="delete-btn" data-key="${video.key}">×</button>
-            </div>
-        </div>
-        `;
+                `;
     }).join('');
-    
+
+    clearAllBtn.disabled = false;
     addButtonEventListeners();
 }
 
 function addButtonEventListeners() {
     document.querySelectorAll('.go-btn').forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', function () {
             const url = this.getAttribute('data-url');
             goToVideo(url);
         });
     });
-    
+
     document.querySelectorAll('.delete-btn').forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', function () {
             const key = this.getAttribute('data-key');
             deleteSavedTime(key);
         });
@@ -118,13 +160,13 @@ function createTimestampUrl(originalUrl, timestamp) {
 async function goToVideo(url) {
     try {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        
+
         if (tab.url && tab.url.includes('kick.com')) {
             await chrome.tabs.update(tab.id, { url: url });
         } else {
             await chrome.tabs.create({ url: url });
         }
-        
+
         window.close();
     } catch (error) {
         console.error('Error navigating to video:', error);
@@ -143,21 +185,16 @@ async function deleteSavedTime(key) {
 }
 
 async function clearAllSavedTimes() {
-    //todo: change confirm
-    if (!confirm('Are you sure you want to clear all saved timestamps?')) {
-        return;
-    }
-    
     try {
         const result = await chrome.storage.local.get();
-        const keysToRemove = Object.keys(result).filter(key => 
+        const keysToRemove = Object.keys(result).filter(key =>
             key.startsWith('kick_video_time_')
         );
-        
+
         if (keysToRemove.length > 0) {
             await chrome.storage.local.remove(keysToRemove);
         }
-        
+
         await loadSavedVideos();
     } catch (error) {
         console.error('Error clearing saved times:', error);
