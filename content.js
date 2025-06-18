@@ -53,11 +53,9 @@ class KickVideoTimeSaver {
 
     console.log('Kick Video Time Saver: Video detected', this.streamId);
 
-
     video.addEventListener('loadedmetadata', () => {
       this.updateName();
       this.loadSavedTime();
-      this.isLoaded = true;
     });
 
 
@@ -108,11 +106,13 @@ class KickVideoTimeSaver {
         setTimeout(() => {
           if (this.video && this.video.duration > savedData.timestamp) {
             this.video.currentTime = savedData.timestamp;
+            this.isLoaded = true;
             console.log(`Kick Video Time Saver: Restored time to ${savedData.timestamp}s`);
           }
         }, 1000);
       }
     } catch (error) {
+      this.isLoaded = true;
       console.error('Error loading saved time:', error);
     }
   }
@@ -132,6 +132,7 @@ class KickVideoTimeSaver {
         url: window.location.href
       };
 
+      console.log('saved time', currentTime)
       await chrome.storage.local.set({ [key]: data });
       this.lastSavedTime = currentTime;
     } catch (error) {
