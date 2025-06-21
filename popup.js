@@ -132,7 +132,7 @@ function displaySavedVideos(videos) {
                     </div>
                     <div class="video-actions">
                         <button class="go-btn" data-url="${escapeHtml(videoUrl)}">Go</button>
-                        <button class="delete-btn" data-key="${video.key}">×</button>
+                        <button class="delete-btn" data-key="${video.streamId}">×</button>
                     </div>
                 </div>
                 `;
