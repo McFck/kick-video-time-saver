@@ -1,6 +1,13 @@
 window.KickTimeSaver = window.KickTimeSaver || {};
 
 window.KickTimeSaver.utils = {
+    getSavedDataObj: async function (entryId) {
+        const data = await chrome.storage.local.get([entryId]);
+        return data ? data[entryId] : null;
+    },
+    setSavedDataObj: async function (entryId, data) {
+        return chrome.storage.local.set({ [entryId]: data })
+    },
     extractTimecode: function () {
         try {
             const parsedUrl = new URL(window.location.href);

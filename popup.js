@@ -54,9 +54,9 @@ async function loadSavedVideos() {
                     keysToRemove.push(key);
                 } else {
                     savedVideos.push({
-                        key: key,
-                        streamId: value.streamId,
+                        streamId: key,
                         streamName: value.streamName || 'No title',
+                        streamerName: value.streamerName || 'No name',
                         duration: value.duration,
                         timestamp: value.timestamp,
                         savedAt: value.savedAt,
@@ -75,6 +75,10 @@ async function loadSavedVideos() {
         document.getElementById('savedVideos').innerHTML =
             '<div class="no-data">Error loading saved times</div>';
     }
+}
+
+function getStreamerPageUrl(streamerName) {
+    return `https://kick.com/${streamerName}`
 }
 
 function displaySavedVideos(videos) {
@@ -115,9 +119,16 @@ function displaySavedVideos(videos) {
                     <div class="video-progress-fill" style="width: ${watchedPercentage}%;"></div>
                     <div class="video-info">
                         <div class="video-name" title="${escapeHtml(video.streamName || video.streamId)}">${escapeHtml(displayName)}</div>
-                        <div class="video-time">
-                            ${utils.formatTime(video.timestamp)} / ${utils.formatTime(video.duration)} • ${utils.formatDate(video.savedAt)}
+                        <div class="info-block">
+                            <a class="channel-info" href="${getStreamerPageUrl(video.streamerName)}" data-url="${getStreamerPageUrl(video.streamerName)}">
+                                <img class="kick-icon" src="assets/kick.png">
+                                <span>${video.streamerName}</span>
+                            </a>
+                            <div class="video-time">
+                                ${utils.formatTime(video.timestamp)} / ${utils.formatTime(video.duration)} • ${utils.formatDate(video.savedAt)}
+                            </div>
                         </div>
+                        
                     </div>
                     <div class="video-actions">
                         <button class="go-btn" data-url="${escapeHtml(videoUrl)}">Go</button>
@@ -143,6 +154,13 @@ function addButtonEventListeners() {
         button.addEventListener('click', function () {
             const key = this.getAttribute('data-key');
             deleteSavedTime(key);
+        });
+    });
+
+    document.querySelectorAll('.channel-info').forEach(button => {
+        button.addEventListener('click', function () {
+            const url = this.getAttribute('data-url');
+            goToVideo(url);
         });
     });
 }

@@ -2,17 +2,11 @@ const utils = window.KickTimeSaver.utils;
 
 class KickVideoTimeSaver {
   constructor() {
-    this.video = null;
-    this.streamId = null;
-    this.saveInterval = null;
-    this.isInitialized = false;
-    this.isLoaded = false;
-    this.lastSavedTime = 0;
-    this.saveFrequency = 5000;
+    this.initializeVariables();
     this.init();
   }
 
-  async init() {    
+  async init() {
     this.waitForVideo();
 
     this.observeUrlChanges();
@@ -48,10 +42,10 @@ class KickVideoTimeSaver {
 
   async setupVideoHandlers(video) {
     this.video = video;
-    this.streamId = this.getStreamId();
+    this.streamInfo.id = this.getStreamId();
     this.isInitialized = true;
 
-    console.log('Kick Video Time Saver: Video detected', this.streamId);
+    console.log('Kick Video Time Saver: Video detected', this.streamInfo.id);
 
     video.addEventListener('loadedmetadata', () => {
       this.updateName();
@@ -97,9 +91,8 @@ class KickVideoTimeSaver {
 
   async loadSavedTime() {
     try {
-      const key = this.streamId;
-      const result = await chrome.storage.local.get([key]);
-      const savedData = result[key];
+      const key = this.streamInfo.id;
+      const savedData = await utils.getSavedDataObj(key);
 
       if (savedData && savedData.timestamp && this.video && !utils.extractTimecode()) {
         // Wait a bit for video to be fully loaded
@@ -110,6 +103,9 @@ class KickVideoTimeSaver {
             this.isLoaded = true;
           }
         }, 1000);
+      } else {
+        this.isLoaded = true;
+        console.log('loaded true')
       }
     } catch (error) {
       console.error('Error loading saved time:', error);
@@ -117,26 +113,32 @@ class KickVideoTimeSaver {
     }
   }
 
+  getStreamerName(url) {
+    const re = /^https?:\/\/(?:www\.)?kick\.com\/([^/]+)\/videos/;
+    const match = url.match(re);
+    return match ? match[1] : null;
+  }
+
   async saveCurrentTime() {
-    if (!this.video || !this.streamId || !this.isLoaded) return;
+    if (!this.video || !this.streamInfo.id || !this.isLoaded) return;
 
     const currentTime = this.video.currentTime;
     const duration = this.video.duration;
     console.log(duration)
 
     try {
-      const key = this.streamId
+      const key = this.streamInfo.id;
       const data = {
         timestamp: currentTime,
         duration,
         savedAt: Date.now(),
-        streamId: this.streamId,
-        streamName: this.streamName,
+        streamName: this.streamInfo.title,
+        streamerName: this.getStreamerName(window.location.href),
         url: window.location.href
       };
 
       console.log('saved time', currentTime);
-      await chrome.storage.local.set({ [key]: data });
+      await utils.setSavedDataObj(key, data);
       this.lastSavedTime = currentTime;
     } catch (error) {
       console.error('Error saving time:', error);
@@ -145,8 +147,8 @@ class KickVideoTimeSaver {
 
   updateName() {
     const newName = this.getStreamName();
-    if (newName !== this.streamName) {
-      this.streamName = newName;
+    if (newName !== this.streamInfo.title) {
+      this.streamInfo.title = newName;
     }
   }
 
@@ -166,14 +168,24 @@ class KickVideoTimeSaver {
     }
   }
 
-  cleanup() {
-    this.stopPeriodicSave();
+  initializeVariables() {
     this.video = null;
-    this.streamId = null;
-    this.streamName = 'No title';
+    this.streamInfo = {
+      id: null,
+      title: 'No title',
+      channelName: 'No name'
+    }
+    this.saveInterval = null;
     this.isInitialized = false;
     this.isLoaded = false;
+    console.log('isLoaded false')
     this.lastSavedTime = 0;
+    this.saveFrequency = 5000;
+  }
+
+  cleanup() {
+    this.stopPeriodicSave();
+    this.initializeVariables();
   }
 
   observeUrlChanges() {
