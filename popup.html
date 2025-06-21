@@ -74,17 +74,18 @@
             background: #f9fafb;
             gap: 6px;
             max-width: 300px;
+            overflow: hidden;
         }
 
         .video-info {
             flex: 1;
-            
         }
 
         .video-name {
             font-weight: 500;
             color: #1f2937;
             margin-bottom: 2px;
+            word-break: break-all;
         }
 
         .video-time, .video-actions {
@@ -101,6 +102,7 @@
         .video-actions {
             display: flex;
             gap: 4px;
+            flex: 0;
         }
 
         .delete-btn {
