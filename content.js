@@ -105,7 +105,6 @@ class KickVideoTimeSaver {
         }, 1000);
       } else {
         this.isLoaded = true;
-        console.log('loaded true')
       }
     } catch (error) {
       console.error('Error loading saved time:', error);
@@ -124,7 +123,6 @@ class KickVideoTimeSaver {
 
     const currentTime = this.video.currentTime;
     const duration = this.video.duration;
-    console.log(duration)
 
     try {
       const key = this.streamInfo.id;
@@ -137,7 +135,6 @@ class KickVideoTimeSaver {
         url: window.location.href
       };
 
-      console.log('saved time', currentTime);
       await utils.setSavedDataObj(key, data);
       this.lastSavedTime = currentTime;
     } catch (error) {
@@ -178,7 +175,6 @@ class KickVideoTimeSaver {
     this.saveInterval = null;
     this.isInitialized = false;
     this.isLoaded = false;
-    console.log('isLoaded false')
     this.lastSavedTime = 0;
     this.saveFrequency = 5000;
   }
