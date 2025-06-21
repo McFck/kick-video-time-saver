@@ -4,7 +4,9 @@
 # Kick VOD Progress Saver
 A lightweight Chrome extension that automatically saves your VOD watch progress on **Kick.com**. Perfect for those who like to jump back into streams where they left off — without the hassle.
 
-![image](https://github.com/user-attachments/assets/e17893cc-2edc-49bf-a5ef-0163a582d5a6)
+![image](https://github.com/user-attachments/assets/047b7609-a731-4210-8a80-2c9975796d16)
+
+![image](https://github.com/user-attachments/assets/df5b349f-f01b-46b4-bfd2-4f4e59fd2b3c)
 
 📌 Features
 - ⏱ Automatic VOD Progress Saving
