@@ -31,12 +31,12 @@ A lightweight Chrome extension that automatically saves your VOD watch progress 
 4. You can also access a history view from the extension popup for quick navigation.
 
 📥 Installation
-> [!NOTE]  
-  Due to the Chrome Extension Store being pay to publish I prefer to do local releases instead. Updates are manual as well...
-1. **Download** .crx file from the releases.
+You can get it directly from the [Google Store](https://chromewebstore.google.com/detail/ggakiehgefdfddkndmafhokdhfcfbald?utm_source=item-share-cb) or download it locally
+1. **Download** source
 2. **Open** `chrome://extensions`.
-3. **Drag 'n Drop** downloaded file inside `chrome://extensions` page
-4. **Done!**
+3. **Enable developer mode**
+4. Click **install unpackaged extension**
+5. **Done!**
 
 ![image](https://github.com/user-attachments/assets/546a429d-c21b-4b67-922d-d07fc39ded43)
 
