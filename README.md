@@ -31,7 +31,8 @@ A lightweight Chrome extension that automatically saves your VOD watch progress 
 4. You can also access a history view from the extension popup for quick navigation.
 
 📥 Installation
-You can get it directly from the [Google Store](https://chromewebstore.google.com/detail/ggakiehgefdfddkndmafhokdhfcfbald?utm_source=item-share-cb) or download it locally
+
+You can get it directly from the [Google Store](https://chromewebstore.google.com/detail/ggakiehgefdfddkndmafhokdhfcfbald?utm_source=item-share-cb) or download it locally via instructions below
 1. **Download** source
 2. **Open** `chrome://extensions`.
 3. **Enable developer mode**
